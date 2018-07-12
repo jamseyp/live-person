@@ -38,6 +38,7 @@ class UrlBuilder
     private $queryParams = [];
     /** @var int the version. */
     private $version = 1;
+    private $actionContext = null;
 
 
     /**
@@ -88,6 +89,22 @@ class UrlBuilder
         }
 
         $this->service = $service;
+
+        return $this;
+    }
+
+    /**
+     * @param $context
+     *
+     * @return UrlBuilder
+     */
+    public function addActionContext($context): UrlBuilder
+    {
+        if (!$this->locked) {
+            return $this;
+        }
+
+        $this->actionContext = $context;
 
         return $this;
     }
@@ -198,6 +215,10 @@ class UrlBuilder
         $url .= $this->account . '/';
         $url .= $this->action;
 
+        if (null !== $this->actionContext) {
+            $url .= $this->actionContext;
+        }
+
         // If the query has any parameters add them now.
         if ($this->hasQuery) {
             $url .= '?';
@@ -238,5 +259,4 @@ class UrlBuilder
 
         return $generatedUrl;
     }
-
 }

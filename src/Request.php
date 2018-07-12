@@ -197,6 +197,4 @@ class Request
 
         $this->bearer = $response->bearer;
     }
-
-
 }

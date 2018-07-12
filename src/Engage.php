@@ -30,6 +30,13 @@ class Engage
     private $ended = false;
 
 
+    /**
+     * Engage constructor.
+     *
+     * @param AccountConfig $accountConfig
+     * @param int $retryLimit
+     * @param LoggerInterface|null $logger
+     */
     public function __construct(AccountConfig $accountConfig, int $retryLimit = 3, LoggerInterface $logger = null)
     {
         $this->accountConfig = $accountConfig;
@@ -49,9 +56,19 @@ class Engage
      */
     public function visitor($visitorId, $sessionId, $setData = false)
     {
-        $url = "https://{$this->request->getDomain('smt')}/api/account/{$this->accountConfig->getAccountId()}/monitoring/visitors/{$visitorId}/visits/current/events?v=1&sid={$sessionId}";
+        $url = $this->request->buildUrl('smt')
+            ->setAccount($this->accountConfig->getAccountId())
+            ->setAction('monitoring/visitors')
+            ->addActionContext($visitorId . '/visits/current/events')
+            ->hasQueryParam(true)
+            ->addQueryParam('sid', $sessionId)
+            ->setVersion(1)
+            ->build()
+            ->getUrl();
 
-        return false === $setData ? $this->request->v1($url, Request::METHOD_GET) : $this->request->v1($url, Request::METHOD_POST, $setData);
+
+        return false === $setData ? $this->request->v1($url, Request::METHOD_GET)
+            : $this->request->v1($url, Request::METHOD_POST, $setData);
     }
 
     /**
@@ -76,8 +93,8 @@ class Engage
             'interactive' => $this->interactive,
             'ended' => false,
             'start' => [
-                'from' => $start->getTimestamp() . "000",
-                'to' => $end->getTimestamp() . "000",
+                'from' => $this->dateTimeToMilliseconds($start),
+                'to' => $this->dateTimeToMilliseconds($end),
             ],
             'skillIds' => $this->skills
         ];
@@ -109,8 +126,8 @@ class Engage
         $data = [
             'status' => $this->ended ? ['CLOSE'] : ['OPEN', 'CLOSE'],
             'start' => [
-                'from' => $start->getTimestamp() . '000',
-                'to' => $end->getTimestamp() . '000',
+                'from' => $this->dateTimeToMilliseconds($start),
+                'to' => $this->dateTimeToMilliseconds($end),
             ],
             'skillIds' => $this->skills
         ];
@@ -122,6 +139,31 @@ class Engage
         return $result;
     }
 
+    /**
+     * Gets status of agents based on provided Skill IDs.
+     *
+     * @param array $skills
+     *
+     * @return array|\stdClass
+     */
+    public function getAgentStatus(array $skills)
+    {
+        $url = $this->request->buildUrl(self::MESSAGE_HISTORY_SERVICE)
+            ->setService('messaging_history')
+            ->setAccount($this->accountConfig->getAccountId())
+            ->setAction('/agent-view/status');
+        $data = ['skillsIds' => $skills];
+
+        $response = $this->request->v1($url, Request::METHOD_GET, $data);
+
+        return $response;
+    }
+
+    /**
+     * Gets the current status of the API.
+     *
+     * @return array|\stdClass
+     */
     public function status()
     {
         $url = "https://status.liveperson.com/json?site={$this->accountConfig->getAccountId()}";
@@ -129,5 +171,17 @@ class Engage
         $response = $this->request->v1($url, Request::METHOD_GET);
 
         return $response;
+    }
+
+    /**
+     * Converts a datetime obj into a int represents milliseconds since the epoc.
+     *
+     * @param \DateTime $dateTime
+     *
+     * @return int
+     */
+    private function dateTimeToMilliseconds(\DateTime $dateTime)
+    {
+        return strtotime($dateTime->format('Y-m-d H:i:sP'));
     }
 }
