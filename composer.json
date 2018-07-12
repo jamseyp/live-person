@@ -1,0 +1,30 @@
+{
+  "name": "cws/liveperson",
+  "type": "library",
+  "description": "Generic LiveEngage package",
+  "license": "MIT",
+  "version": "0.1.dev",
+  "minimum-stability": "dev",
+  "authors": [
+    {
+      "name": "James Parker",
+      "email": "jamseyp@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "CwsOps\\LivePerson\\": "src"
+    },
+    "exclude-from-classmap": [
+      "tests/"
+    ]
+  },
+  "require": {
+    "php": ">=7.0",
+    "psr/log": "1.0.*",
+    "guzzlehttp/oauth-subscriber": "0.3.*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "6.5.*"
+  }
+}
