@@ -153,7 +153,7 @@ class Request
      *
      * @return array|\stdClass an array that contains the result or an empty array on error.
      */
-    public function v2(string $url, $method, $payload, $headers = null)
+    public function v2(string $url, $method, $payload = [], $headers = null)
     {
         $this->login();
 

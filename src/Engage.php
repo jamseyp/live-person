@@ -8,6 +8,7 @@
 
 namespace CwsOps\LivePerson;
 
+use CwsOps\LivePerson\DataModels\Agent;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -157,6 +158,46 @@ class Engage
         $response = $this->request->v1($url, Request::METHOD_GET, $data);
 
         return $response;
+    }
+
+    /**
+     * Gets a agent or a collection of agents.
+     *
+     * @param int $agentsId the agent id, if left to null, then will return all agents.
+     *
+     * @return Agent[]|Agent
+     */
+    public function getAgents(int $agentsId = null)
+    {
+        $action = 'configuration/le-users/users';
+
+        $multiple = false;
+        if (null === $agentsId) {
+            $multiple = true;
+            $action .= '/' . $agentsId;
+        }
+
+
+        $url = $this->request->buildUrl('')
+            ->setAccount($this->accountConfig->getAccountId())
+            ->setAction($action)
+            ->setVersion(4)
+            ->build()
+            ->getUrl();
+
+        $response = $this->request->v2($url, Request::METHOD_GET);
+
+        $data = json_decode($response);
+        $collection = [];
+        if ($multiple) {
+            foreach ($data as $agent) {
+                $collection[] = new Agent($agent);
+            }
+            return $collection;
+        } else {
+            $agent = new Agent($data);
+            return $agent;
+        }
     }
 
     /**
