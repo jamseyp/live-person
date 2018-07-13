@@ -1,0 +1,18 @@
+<phpunit codecoverage="true" haltonfailure="true" haltonerror="true" bootstrap="tests/bootstrap.php">
+    <formatter type="clover" usefile="true"/>
+    <testsuite name="Poseidon">
+        <directory>./Tests</directory>
+    </testsuite>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="false">
+            <directory suffix=".php">./src/</directory>
+        </whitelist>
+        <exclude>
+            <directory>./var</directory>
+            <directory>./vendor</directory>
+            <directory>./tests</directory>
+        </exclude>
+    </filter>
+
+</phpunit>

@@ -50,7 +50,7 @@ class UrlBuilder
      */
     public function create(bool $secure = true): UrlBuilder
     {
-        if (!$this->locked) {
+        if ($this->locked) {
             return $this;
         }
         $this->isSecure = $secure;
@@ -67,7 +67,7 @@ class UrlBuilder
      */
     public function setDomain(string $domain): UrlBuilder
     {
-        if (!$this->locked) {
+        if ($this->locked) {
             return $this;
         }
         $this->domain = $domain;
@@ -84,7 +84,7 @@ class UrlBuilder
      */
     public function setService(string $service): UrlBuilder
     {
-        if (!$this->locked) {
+        if ($this->locked) {
             return $this;
         }
 
@@ -100,7 +100,7 @@ class UrlBuilder
      */
     public function addActionContext($context): UrlBuilder
     {
-        if (!$this->locked) {
+        if ($this->locked) {
             return $this;
         }
 
@@ -118,7 +118,7 @@ class UrlBuilder
      */
     public function setAction(string $action): UrlBuilder
     {
-        if (!$this->locked) {
+        if ($this->locked) {
             return $this;
         }
 
@@ -136,7 +136,7 @@ class UrlBuilder
      */
     public function setAccount(string $account): UrlBuilder
     {
-        if (!$this->locked) {
+        if ($this->locked) {
             return $this;
         }
         $this->account = $account;
@@ -169,7 +169,7 @@ class UrlBuilder
      */
     public function addQueryParam(string $key, string $value): UrlBuilder
     {
-        if (!$this->locked) {
+        if ($this->locked) {
             return $this;
         }
 
@@ -193,45 +193,11 @@ class UrlBuilder
      */
     public function setVersion(string $version): UrlBuilder
     {
-        if (!$this->locked) {
+        if ($this->locked) {
             return $this;
         }
         $this->version = $version;
         return $this;
-    }
-
-    /**
-     * Creates the URL from all the different parts.
-     *
-     * @return void
-     */
-    private function createUrl()
-    {
-        // Build the URL.
-        $url = $this->isSecure ? $url = 'http://' : $url = 'https://';
-        $url .= $this->domain . '/';
-        $url .= $this->service . '/';
-        $url .= 'api/account/';
-        $url .= $this->account . '/';
-        $url .= $this->action;
-
-        if (null !== $this->actionContext) {
-            $url .= $this->actionContext;
-        }
-
-        // If the query has any parameters add them now.
-        if ($this->hasQuery) {
-            $url .= '?';
-            foreach ($this->queryParams as $key => $value) {
-                $url .= $key . '=' . $value;
-            }
-
-            $url .= 'v=' . $this->version;
-        } else {
-            $url .= '?v=' . $this->version;
-        }
-
-        $this->url = urlencode($url);
     }
 
     /**
@@ -241,8 +207,8 @@ class UrlBuilder
      */
     public function build(): UrlBuilder
     {
-        $this->locked = true;
         $this->createUrl();
+        $this->locked = true;
         return $this;
     }
 
@@ -258,5 +224,55 @@ class UrlBuilder
         $this->locked = false;
 
         return $generatedUrl;
+    }
+
+    /**
+     * Creates the URL from all the different parts.
+     *
+     * @return void
+     */
+    private function createUrl()
+    {
+        // Build the URL.
+        $url = $this->isSecure ? $url = 'https://' : $url = 'http://';
+
+        // Add the attributes, to the URL.
+        $this->addToUrl($url, $this->domain);
+        $this->addToUrl($url, $this->service);
+        $this->addToUrl($url, 'api/account');
+        $this->addToUrl($url, $this->account);
+        $this->addToUrl($url, $this->action);
+        $this->addToUrl($url, $this->actionContext);
+
+        // If the query has any parameters add them now.
+        if ($this->hasQuery) {
+            $url .= '?';
+            foreach ($this->queryParams as $key => $value) {
+                $url .= $key . '=' . $value;
+            }
+
+            $url .= 'v=' . $this->version;
+        } else {
+            $url .= '?v=' . $this->version;
+        }
+
+        $this->url = $url;
+    }
+
+    /**
+     * Adds an attribute
+     *
+     * Note: the url is passed by reference.
+     *
+     * @param string $url The url to edit.
+     * @param string $attribute the attribute to add.
+     *
+     * @return void
+     */
+    private function addToUrl(&$url, $attribute)
+    {
+        if (null !== $attribute) {
+            $url .= $attribute . '/';
+        }
     }
 }
