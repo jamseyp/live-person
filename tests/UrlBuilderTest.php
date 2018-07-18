@@ -8,10 +8,16 @@
 
 namespace CwsOps\LivePerson\Tests;
 
-use CwsOps\LivePerson\UrlBuilder;
+use CwsOps\LivePerson\Rest\BuilderLockedException;
+use CwsOps\LivePerson\Rest\UrlBuilder;
+use CwsOps\LivePerson\Rest\URLNotBuiltException;
 use PHPUnit\Framework\TestCase;
 
-
+/**
+ * Class UrlBuilderTest
+ *
+ * @package CwsOps\LivePerson\Tests
+ */
 class UrlBuilderTest extends TestCase
 {
     /**
@@ -160,4 +166,55 @@ class UrlBuilderTest extends TestCase
         $this->assertContains('?v=22', $builder->build()->getUrl());
     }
 
+    /**
+     * @covers \CwsOps\LivePerson\UrlBuilder::build()
+     * @covers \CwsOps\LivePerson\UrlBuilder::getUrl()
+     */
+    public function testCanBuildFullUrl()
+    {
+        $builder = new UrlBuilder();
+
+        $url = $builder->create(true)
+            ->setDomain('en.liveperson.net')
+            ->setService('message-history')
+            ->setAccount('1929283')
+            ->addActionContext('foo')
+            ->hasQueryParam(true)
+            ->addQueryParam('foo', 'bar')
+            ->setVersion('2912')
+            ->build()
+            ->getUrl();
+
+        $expected = 'https://en.liveperson.net/message-history/api/account/1929283/foo?foo=barv=2912';
+
+        $this->assertEquals($expected, $url);
+    }
+
+    public function testThrowsBuilderLockedException()
+    {
+        $builder = new UrlBuilder();
+
+        $url = $builder->create(true)
+            ->setDomain('en.liveperson.net')
+            ->setService('message-history')
+            ->setAccount('1929283')
+            ->addActionContext('foo')
+            ->hasQueryParam(true)
+            ->addQueryParam('foo', 'bar')
+            ->setVersion('2912')
+            ->build();
+
+        $this->expectException(BuilderLockedException::class);
+
+        $url->setAction('s');
+    }
+
+    public function testThrowsUrlNotBuiltException()
+    {
+        $builder = new UrlBuilder();
+
+        $this->expectException(URLNotBuiltException::class);
+
+        $builder->getUrl();
+    }
 }

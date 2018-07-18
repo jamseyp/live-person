@@ -9,6 +9,8 @@
 namespace CwsOps\LivePerson;
 
 use CwsOps\LivePerson\DataModels\Agent;
+use CwsOps\LivePerson\Account\Config;
+use CwsOps\LivePerson\Rest\Request;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -34,11 +36,11 @@ class Engage
     /**
      * Engage constructor.
      *
-     * @param AccountConfig $accountConfig
+     * @param Config $accountConfig
      * @param int $retryLimit
      * @param LoggerInterface|null $logger
      */
-    public function __construct(AccountConfig $accountConfig, int $retryLimit = 3, LoggerInterface $logger = null)
+    public function __construct(Config $accountConfig, int $retryLimit = 3, LoggerInterface $logger = null)
     {
         $this->accountConfig = $accountConfig;
         $this->request = new Request($accountConfig, $retryLimit, $logger);

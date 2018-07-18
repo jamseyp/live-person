@@ -6,10 +6,11 @@
  * Time: 15:48
  */
 
-namespace CwsOps\LivePerson;
+namespace CwsOps\LivePerson\Rest;
 
 /**
- * Class Url
+ *  Class Url
+ *
  *  Handles the creation of a LivePerson API URL.
  *
  *  This follows a fluid interface for ease of use.
@@ -38,6 +39,7 @@ class UrlBuilder
     private $queryParams = [];
     /** @var int the version. */
     private $version = 1;
+    /** @var string|null any additional context to the action. */
     private $actionContext = null;
 
 
@@ -47,11 +49,13 @@ class UrlBuilder
      * @param bool $secure true or false if the Url should be secure.
      *
      * @return UrlBuilder
+     *
+     * @throws BuilderLockedException
      */
     public function create(bool $secure = true): UrlBuilder
     {
         if ($this->locked) {
-            return $this;
+            throw new BuilderLockedException();
         }
         $this->isSecure = $secure;
 
@@ -64,11 +68,13 @@ class UrlBuilder
      * @param string $domain
      *
      * @return UrlBuilder
+     *
+     * @throws BuilderLockedException
      */
     public function setDomain(string $domain): UrlBuilder
     {
         if ($this->locked) {
-            return $this;
+            throw new BuilderLockedException();
         }
         $this->domain = $domain;
 
@@ -81,11 +87,13 @@ class UrlBuilder
      * @param string $service
      *
      * @return UrlBuilder
+     *
+     * @throws BuilderLockedException
      */
     public function setService(string $service): UrlBuilder
     {
         if ($this->locked) {
-            return $this;
+            throw new BuilderLockedException();
         }
 
         $this->service = $service;
@@ -97,11 +105,13 @@ class UrlBuilder
      * @param $context
      *
      * @return UrlBuilder
+     *
+     * @throws BuilderLockedException
      */
     public function addActionContext($context): UrlBuilder
     {
         if ($this->locked) {
-            return $this;
+            throw new BuilderLockedException();
         }
 
         $this->actionContext = $context;
@@ -115,11 +125,13 @@ class UrlBuilder
      * @param string $action
      *
      * @return UrlBuilder
+     *
+     * @throws BuilderLockedException
      */
     public function setAction(string $action): UrlBuilder
     {
         if ($this->locked) {
-            return $this;
+            throw new BuilderLockedException();
         }
 
         $this->action = $action;
@@ -133,11 +145,13 @@ class UrlBuilder
      * @param string $account
      *
      * @return UrlBuilder
+     *
+     * @throws BuilderLockedException
      */
     public function setAccount(string $account): UrlBuilder
     {
         if ($this->locked) {
-            return $this;
+            throw new BuilderLockedException();
         }
         $this->account = $account;
 
@@ -166,11 +180,13 @@ class UrlBuilder
      * @param string $value the value relating to the key.
      *
      * @return UrlBuilder
+     *
+     * @throws BuilderLockedException
      */
     public function addQueryParam(string $key, string $value): UrlBuilder
     {
         if ($this->locked) {
-            return $this;
+            throw new BuilderLockedException();
         }
 
         if (!$this->hasQuery) {
@@ -190,11 +206,13 @@ class UrlBuilder
      * @param string $version
      *
      * @return UrlBuilder
+     *
+     * @throws BuilderLockedException
      */
     public function setVersion(string $version): UrlBuilder
     {
         if ($this->locked) {
-            return $this;
+            throw new BuilderLockedException();
         }
         $this->version = $version;
         return $this;
@@ -216,9 +234,15 @@ class UrlBuilder
      * Gets the built URL.
      *
      * @return string
+     *
+     * @throws URLNotBuiltException
      */
     public function getUrl(): string
     {
+        if(!$this->locked){
+            throw new URLNotBuiltException();
+        }
+
         $generatedUrl = $this->url;
         $this->url = null;
         $this->locked = false;
@@ -242,7 +266,7 @@ class UrlBuilder
         $this->addToUrl($url, 'api/account');
         $this->addToUrl($url, $this->account);
         $this->addToUrl($url, $this->action);
-        $this->addToUrl($url, $this->actionContext);
+        $this->addToUrl($url, $this->actionContext, false);
 
         // If the query has any parameters add them now.
         if ($this->hasQuery) {
@@ -266,13 +290,18 @@ class UrlBuilder
      *
      * @param string $url The url to edit.
      * @param string $attribute the attribute to add.
+     * @param bool $trailingSlash true or false to add the trailing slash.
      *
      * @return void
      */
-    private function addToUrl(&$url, $attribute)
+    private function addToUrl(&$url, $attribute, $trailingSlash = true)
     {
         if (null !== $attribute) {
-            $url .= $attribute . '/';
+            $url .= $attribute;
+
+            if ($trailingSlash) {
+                $url .= '/';
+            }
         }
     }
 }

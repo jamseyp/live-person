@@ -6,8 +6,9 @@
  * Time: 13:35
  */
 
-namespace CwsOps\LivePerson;
+namespace CwsOps\LivePerson\Rest;
 
+use CwsOps\LivePerson\Account\Config;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
@@ -26,7 +27,7 @@ class Request
     /**
      * An AccountConfig obj
      *
-     * @var AccountConfig $config
+     * @var Config $config
      */
     private $config;
 
@@ -57,11 +58,11 @@ class Request
     /**
      * Request constructor.
      *
-     * @param AccountConfig $accountConfig
+     * @param Config $accountConfig
      * @param int $retryLimit the number of times to retry on failure. Recommended is 3.
      * @param LoggerInterface|null $logger
      */
-    public function __construct(AccountConfig $accountConfig, int $retryLimit = 3, LoggerInterface $logger = null)
+    public function __construct(Config $accountConfig, int $retryLimit = 3, LoggerInterface $logger = null)
     {
         $this->config = $accountConfig;
         $this->retryLimit = $retryLimit;
@@ -88,14 +89,20 @@ class Request
 
     /**
      * Creates a URLBuilder instance with the domain allready set.
+     *
      * @param $service
      *
-     * @return UrlBuilder
+     * @return UrlBuilder|null
      */
     public function buildUrl($service)
     {
-        return $this->urlBuilder->create(true)
-            ->setService($this->getDomain($service));
+        try {
+            return $this->urlBuilder->create(true)
+                ->setService($this->getDomain($service));
+        } catch (BuilderLockedException $e) {
+            $this->logger->critical($e->getMessage());
+        }
+        return $this->urlBuilder;
     }
 
     /**
