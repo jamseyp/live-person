@@ -14,15 +14,18 @@ use CwsOps\LivePerson\Rest\URLNotBuiltException;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * @codeCoverageIgnore
  * Class UrlBuilderTest
+ *
+ *
+ *
+ * @coversDefaultClass \CwsOps\LivePerson\Rest\UrlBuilder
  *
  * @package CwsOps\LivePerson\Tests
  */
 class UrlBuilderTest extends TestCase
 {
-    /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::__construct
-     */
+
     public function testCanInitWithNoOptions()
     {
         $builder = new UrlBuilder();
@@ -31,7 +34,9 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::create()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::create()
+     *
+     * @throws BuilderLockedException
      */
     public function testReturnsInstanceOfSelf()
     {
@@ -41,9 +46,12 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::build()
-     * @covers \CwsOps\LivePerson\UrlBuilder::getUrl()
-     * @covers \CwsOps\LivePerson\UrlBuilder::create()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::build()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::getUrl()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::create()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanBuildAndCreate()
     {
@@ -54,9 +62,12 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::build()
-     * @covers \CwsOps\LivePerson\UrlBuilder::getUrl()
-     * @covers \CwsOps\LivePerson\UrlBuilder::create()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::build()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::getUrl()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::create()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanBuildSecureUrl()
     {
@@ -67,7 +78,10 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::setDomain()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::setDomain()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanSetDomain()
     {
@@ -79,7 +93,10 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::setService()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::setService()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanSetService()
     {
@@ -91,7 +108,10 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::setAction()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::setAction()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanSetAction()
     {
@@ -104,7 +124,10 @@ class UrlBuilderTest extends TestCase
 
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::setAccount()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::setAccount()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanSetAccount()
     {
@@ -116,7 +139,10 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::addActionContext()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::addActionContext()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanSetActionContext()
     {
@@ -128,8 +154,11 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::addQueryParam()
-     * @covers \CwsOps\LivePerson\UrlBuilder::hasQueryParam()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::addQueryParam()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::hasQueryParam()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanAddAdditionalParams()
     {
@@ -142,7 +171,10 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::hasQueryParam()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::hasQueryParam()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanSetHasQueryParamsToFalse()
     {
@@ -155,7 +187,10 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::setVersion()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::setVersion()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanChangeVersionNumber()
     {
@@ -167,8 +202,12 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
-     * @covers \CwsOps\LivePerson\UrlBuilder::build()
-     * @covers \CwsOps\LivePerson\UrlBuilder::getUrl()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::build()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::getUrl()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::createUrl()
+     *
+     * @throws BuilderLockedException
+     * @throws URLNotBuiltException
      */
     public function testCanBuildFullUrl()
     {
@@ -190,6 +229,13 @@ class UrlBuilderTest extends TestCase
         $this->assertEquals($expected, $url);
     }
 
+    /**
+     * @covers \CwsOps\LivePerson\Rest\BuilderLockedException
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::isValid()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::addToUrl()
+     *
+     * @throws BuilderLockedException
+     */
     public function testThrowsBuilderLockedException()
     {
         $builder = new UrlBuilder();
@@ -205,10 +251,35 @@ class UrlBuilderTest extends TestCase
             ->build();
 
         $this->expectException(BuilderLockedException::class);
+        $url->setDomain('en.liveperson.net');
 
+        $this->expectException(BuilderLockedException::class);
         $url->setAction('s');
+
+        $this->expectException(BuilderLockedException::class);
+        $url->setService('message-history');
+
+        $this->expectException(BuilderLockedException::class);
+        $url->setAccount('1929283');
+
+        $this->expectException(BuilderLockedException::class);
+        $url->addActionContext('foo');
+
+        $this->expectException(BuilderLockedException::class);
+        $url->hasQueryParam(true);
+
+        $this->expectException(BuilderLockedException::class);
+        $url->addQueryParam('foo', 'bar');
+
+        $this->expectException(BuilderLockedException::class);
+        $url->setVersion('2912');
     }
 
+    /**
+     * @covers \CwsOps\LivePerson\Rest\URLNotBuiltException
+     *
+     * @throws URLNotBuiltException
+     */
     public function testThrowsUrlNotBuiltException()
     {
         $builder = new UrlBuilder();

@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
+ *
  * Class Request
  *
  * @package CwsOps\LivePerson
@@ -74,6 +75,7 @@ class Request
     }
 
     /**
+     * @codeCoverageIgnore
      * Gets the domain for a specified service
      *
      * @param string $service
@@ -88,6 +90,7 @@ class Request
     }
 
     /**
+     * @codeCoverageIgnore
      * Creates a URLBuilder instance with the domain allready set.
      *
      * @param $service
@@ -106,6 +109,7 @@ class Request
     }
 
     /**
+     * @codeCoverageIgnore
      * Performs the actual request on the livePerson api.
      *
      * @param string $url the URL to make the request to.
@@ -151,6 +155,7 @@ class Request
     }
 
     /**
+     * @codeCoverageIgnore
      * Performs the actual request on the livePerson api.
      *
      * @param string $url the URL to make the request to.
@@ -186,6 +191,7 @@ class Request
 
 
     /**
+     * @codeCoverageIgnore
      * Logs into the API.
      */
     private function login()

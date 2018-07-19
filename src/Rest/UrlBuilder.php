@@ -54,7 +54,7 @@ class UrlBuilder
      */
     public function create(bool $secure = true): UrlBuilder
     {
-        if ($this->locked) {
+        if (!$this->isValid()) {
             throw new BuilderLockedException();
         }
         $this->isSecure = $secure;
@@ -73,7 +73,7 @@ class UrlBuilder
      */
     public function setDomain(string $domain): UrlBuilder
     {
-        if ($this->locked) {
+        if (!$this->isValid()) {
             throw new BuilderLockedException();
         }
         $this->domain = $domain;
@@ -92,7 +92,7 @@ class UrlBuilder
      */
     public function setService(string $service): UrlBuilder
     {
-        if ($this->locked) {
+        if (!$this->isValid()) {
             throw new BuilderLockedException();
         }
 
@@ -110,7 +110,7 @@ class UrlBuilder
      */
     public function addActionContext($context): UrlBuilder
     {
-        if ($this->locked) {
+        if (!$this->isValid()) {
             throw new BuilderLockedException();
         }
 
@@ -130,7 +130,7 @@ class UrlBuilder
      */
     public function setAction(string $action): UrlBuilder
     {
-        if ($this->locked) {
+        if (!$this->isValid()) {
             throw new BuilderLockedException();
         }
 
@@ -150,9 +150,10 @@ class UrlBuilder
      */
     public function setAccount(string $account): UrlBuilder
     {
-        if ($this->locked) {
+        if (!$this->isValid()) {
             throw new BuilderLockedException();
         }
+
         $this->account = $account;
 
         return $this;
@@ -185,8 +186,8 @@ class UrlBuilder
      */
     public function addQueryParam(string $key, string $value): UrlBuilder
     {
-        if ($this->locked) {
-            throw new BuilderLockedException();
+        if (!$this->isValid()) {
+            return $this;
         }
 
         if (!$this->hasQuery) {
@@ -211,7 +212,7 @@ class UrlBuilder
      */
     public function setVersion(string $version): UrlBuilder
     {
-        if ($this->locked) {
+        if (!$this->isValid()) {
             throw new BuilderLockedException();
         }
         $this->version = $version;
@@ -239,7 +240,7 @@ class UrlBuilder
      */
     public function getUrl(): string
     {
-        if(!$this->locked){
+        if (!$this->locked) {
             throw new URLNotBuiltException();
         }
 
@@ -303,5 +304,15 @@ class UrlBuilder
                 $url .= '/';
             }
         }
+    }
+
+    /**
+     */
+    private function isValid()
+    {
+        if (!$this->locked) {
+            return true;
+        }
+        return false;
     }
 }

@@ -12,6 +12,11 @@ use CwsOps\LivePerson\Account\Config;
 
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @codeCoverageIgnore
+ * Class ConfigTest
+ * @package CwsOps\LivePerson\Tests
+ */
 class ConfigTest extends TestCase
 {
 
