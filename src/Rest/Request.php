@@ -6,27 +6,32 @@
  * Time: 13:35
  */
 
-namespace CwsOps\LivePerson;
+namespace CwsOps\LivePerson\Rest;
 
+use CwsOps\LivePerson\Account\Config;
+use CwsOps\LivePerson\Traits\HasLoggerTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
+ *
  * Class Request
  *
  * @package CwsOps\LivePerson
  */
 class Request
 {
+    use HasLoggerTrait;
+
     const METHOD_GET = 'GET';
     const METHOD_POST = 'POST';
 
     /**
      * An AccountConfig obj
      *
-     * @var AccountConfig $config
+     * @var Config $config
      */
     private $config;
 
@@ -57,15 +62,15 @@ class Request
     /**
      * Request constructor.
      *
-     * @param AccountConfig $accountConfig
+     * @param Config $accountConfig
      * @param int $retryLimit the number of times to retry on failure. Recommended is 3.
      * @param LoggerInterface|null $logger
      */
-    public function __construct(AccountConfig $accountConfig, int $retryLimit = 3, LoggerInterface $logger = null)
+    public function __construct(Config $accountConfig, int $retryLimit = 3, LoggerInterface $logger = null)
     {
         $this->config = $accountConfig;
         $this->retryLimit = $retryLimit;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $this->hasLogger($logger);
 
         // Set the retry counter to zero.
         $this->retryCounter = 0;
@@ -73,6 +78,8 @@ class Request
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * Gets the domain for a specified service
      *
      * @param string $service
@@ -87,18 +94,27 @@ class Request
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * Creates a URLBuilder instance with the domain allready set.
+     *
      * @param $service
      *
-     * @return UrlBuilder
+     * @return UrlBuilder|null
      */
     public function buildUrl($service)
     {
-        return $this->urlBuilder->create(true)
-            ->setService($this->getDomain($service));
+        try {
+            return $this->urlBuilder->create(true)
+                ->setService($this->getDomain($service));
+        } catch (BuilderLockedException $e) {
+            $this->logger->critical($e->getMessage());
+        }
+        return $this->urlBuilder;
     }
 
     /**
+     * @codeCoverageIgnore
      * Performs the actual request on the livePerson api.
      *
      * @param string $url the URL to make the request to.
@@ -144,16 +160,18 @@ class Request
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * Performs the actual request on the livePerson api.
      *
      * @param string $url the URL to make the request to.
      * @param string $method The method to request the data
      * @param array|null $payload an array of parameters to place into the body of the request.
-     * @param null $headers
+     * @param array $headers
      *
-     * @return array|\stdClass an array that contains the result or an empty array on error.
+     * @return \stdClass an array that contains the result or an empty array on error.
      */
-    public function v2(string $url, $method, $payload, $headers = null)
+    public function v2(string $url, $method, $payload = [], $headers = [])
     {
         $this->login();
 
@@ -179,6 +197,7 @@ class Request
 
 
     /**
+     * @codeCoverageIgnore
      * Logs into the API.
      */
     private function login()

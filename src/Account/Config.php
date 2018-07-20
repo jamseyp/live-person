@@ -6,13 +6,13 @@
  * Time: 15:22
  */
 
-namespace CwsOps\LivePerson;
+namespace CwsOps\LivePerson\Account;
 
 /**
  * Class AccountConfig
  * @package CwsOps\LivePerson
  */
-class AccountConfig
+class Config
 {
     /** @var string $accountId */
     private $accountId;

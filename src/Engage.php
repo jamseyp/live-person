@@ -8,6 +8,8 @@
 
 namespace CwsOps\LivePerson;
 
+use CwsOps\LivePerson\Account\Config;
+use CwsOps\LivePerson\Rest\Request;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -20,6 +22,8 @@ class Engage
 
     const ENGAGEMENT_HISTORY_SERVICE = 'engHistDomain';
     const MESSAGE_HISTORY_SERVICE = 'msgHist';
+    const VISITOR_SERVICE = 'smt';
+    const OPERATIONAL_REAL_TIME_SERVICE = 'leDataReporting';
 
     private $accountConfig;
     private $skills = [];
@@ -33,11 +37,11 @@ class Engage
     /**
      * Engage constructor.
      *
-     * @param AccountConfig $accountConfig
+     * @param Config $accountConfig
      * @param int $retryLimit
      * @param LoggerInterface|null $logger
      */
-    public function __construct(AccountConfig $accountConfig, int $retryLimit = 3, LoggerInterface $logger = null)
+    public function __construct(Config $accountConfig, int $retryLimit = 3, LoggerInterface $logger = null)
     {
         $this->accountConfig = $accountConfig;
         $this->request = new Request($accountConfig, $retryLimit, $logger);
@@ -53,10 +57,13 @@ class Engage
      * @param bool $setData true or false if the information should be set.
      *
      * @return array|\stdClass
+     *
+     * @throws Rest\BuilderLockedException
+     * @throws Rest\URLNotBuiltException
      */
-    public function visitor($visitorId, $sessionId, $setData = false)
+    public function visitor(string $visitorId, string $sessionId, bool $setData = false)
     {
-        $url = $this->request->buildUrl('smt')
+        $url = $this->request->buildUrl(self::VISITOR_SERVICE)
             ->setAccount($this->accountConfig->getAccountId())
             ->setAction('monitoring/visitors')
             ->addActionContext($visitorId . '/visits/current/events')
@@ -72,47 +79,15 @@ class Engage
     }
 
     /**
-     * @param \DateTime $start
-     * @param \DateTime $end
-     *
-     * @return array|\stdClass
-     */
-    public function retrieveHistory(\DateTime $start, \DateTime $end)
-    {
-        $url = $this->request->buildUrl(self::ENGAGEMENT_HISTORY_SERVICE)
-            ->setService('interaction_history')
-            ->setAccount($this->accountConfig->getAccountId())
-            ->setAction('interactions/search')
-            ->hasQueryParam(true)
-            ->addQueryParam('limit', $this->historyLimit)
-            ->addQueryParam('offset', 0)
-            ->build()
-            ->getUrl();
-
-        $payload = [
-            'interactive' => $this->interactive,
-            'ended' => false,
-            'start' => [
-                'from' => $this->dateTimeToMilliseconds($start),
-                'to' => $this->dateTimeToMilliseconds($end),
-            ],
-            'skillIds' => $this->skills
-        ];
-
-        $result = $this->request->v1($url, Request::METHOD_POST, $payload);
-        $result->records = $result->conversationHistoryRecords;
-        $result->conversationHistoryRecords = null;
-
-        return $result;
-    }
-
-    /**
      * Retrieves the message history.
      *
      * @param \DateTime $start
      * @param \DateTime $end
      *
      * @return array|\stdClass
+     *
+     * @throws Rest\BuilderLockedException
+     * @throws Rest\URLNotBuiltException
      */
     public function retrieveMessageHistory(\DateTime $start, \DateTime $end)
     {
@@ -145,6 +120,7 @@ class Engage
      * @param array $skills
      *
      * @return array|\stdClass
+     * @throws Rest\BuilderLockedException
      */
     public function getAgentStatus(array $skills)
     {
@@ -157,6 +133,38 @@ class Engage
         $response = $this->request->v1($url, Request::METHOD_GET, $data);
 
         return $response;
+    }
+
+    /**
+     * Gets a agent or a collection of agents.
+     *
+     * @param int $agentId the agent id, if left to null, then will return all agents.
+     *
+     * @return \stdClass
+     *
+     * @throws Rest\BuilderLockedException
+     * @throws Rest\URLNotBuiltException
+     */
+    public function getAgents(int $agentId = null)
+    {
+        $action = 'configuration/le-users/users';
+
+        if (null === $agentId) {
+            $action .= '/' . $agentId;
+        }
+
+        $url = $this->request->buildUrl('')
+            ->setAccount($this->accountConfig->getAccountId())
+            ->setAction($action)
+            ->setVersion(4)
+            ->build()
+            ->getUrl();
+
+        $response = $this->request->v2($url, Request::METHOD_GET);
+
+        $data = json_decode($response);;
+
+        return $data;
     }
 
     /**

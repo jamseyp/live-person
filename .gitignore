@@ -4,3 +4,5 @@ composer.phar
 /vendor/
 # IntelliJ project files
 .idea
+
+/Test Results - PHPUnit.html
