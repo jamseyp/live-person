@@ -9,6 +9,7 @@
 namespace CwsOps\LivePerson\Rest;
 
 use CwsOps\LivePerson\Account\Config;
+use CwsOps\LivePerson\Traits\HasLoggerTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
@@ -22,6 +23,8 @@ use Psr\Log\NullLogger;
  */
 class Request
 {
+    use HasLoggerTrait;
+
     const METHOD_GET = 'GET';
     const METHOD_POST = 'POST';
 
@@ -67,7 +70,7 @@ class Request
     {
         $this->config = $accountConfig;
         $this->retryLimit = $retryLimit;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $this->hasLogger($logger);
 
         // Set the retry counter to zero.
         $this->retryCounter = 0;
@@ -76,6 +79,7 @@ class Request
 
     /**
      * @codeCoverageIgnore
+     *
      * Gets the domain for a specified service
      *
      * @param string $service
@@ -91,6 +95,7 @@ class Request
 
     /**
      * @codeCoverageIgnore
+     *
      * Creates a URLBuilder instance with the domain allready set.
      *
      * @param $service
@@ -156,16 +161,17 @@ class Request
 
     /**
      * @codeCoverageIgnore
+     *
      * Performs the actual request on the livePerson api.
      *
      * @param string $url the URL to make the request to.
      * @param string $method The method to request the data
      * @param array|null $payload an array of parameters to place into the body of the request.
-     * @param null $headers
+     * @param array $headers
      *
-     * @return array|\stdClass an array that contains the result or an empty array on error.
+     * @return \stdClass an array that contains the result or an empty array on error.
      */
-    public function v2(string $url, $method, $payload = [], $headers = null)
+    public function v2(string $url, $method, $payload = [], $headers = [])
     {
         $this->login();
 

@@ -252,6 +252,16 @@ class UrlBuilder
     }
 
     /**
+     * Returns true or false if the URL is built.
+     *
+     * @return bool
+     */
+    public function isUrlBuilt()
+    {
+        return $this->locked;
+    }
+
+    /**
      * Creates the URL from all the different parts.
      *
      * @return void

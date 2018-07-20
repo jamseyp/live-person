@@ -1,6 +1,6 @@
-<phpunit haltonfailure="true" haltonerror="true" bootstrap="tests/bootstrap.php">
+<phpunit haltonfailure="true" haltonerror="true"  bootstrap="tests/bootstrap.php">
     <formatter type="clover" usefile="true"/>
-    <testsuite name="Poseidon">
+    <testsuite name="CWS-LiverPerson">
         <directory>./Tests</directory>
     </testsuite>
 
