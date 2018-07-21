@@ -60,6 +60,8 @@ class EngagementService extends AbstractService
 
 
     /**
+     * @codeCoverageIgnore
+     *
      * Should provide the Live person service, this service will query against
      *
      * @return string

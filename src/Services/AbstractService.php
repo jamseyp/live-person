@@ -50,6 +50,14 @@ abstract class AbstractService
      */
     public function __construct(Config $config, int $retryLimit = 3, LoggerInterface $logger = null)
     {
+        if ($retryLimit > 5) {
+            throw new \InvalidArgumentException(
+                sprintf('Maximum $retryLimit is 5 you tried setting %d, try setting a value between 0 and 5',
+                    $retryLimit)
+            );
+        }
+
+
         $this->config = $config;
         $this->retryLimit = $retryLimit;
         $this->logger = $this->hasLogger($logger);
@@ -59,11 +67,13 @@ abstract class AbstractService
 
 
     /**
+     * @codeCoverageIgnore
      * Gets the current status of the account api.
      * @return array|\stdClass
      */
-    public function status()
+    public function getStatus()
     {
+        // @codeCoverageIgnore
         $url = "https://status.liveperson.com/json?site={$this->config->getAccountId()}";
 
         $response = $this->request->v1($url, Request::METHOD_GET);
@@ -84,7 +94,8 @@ abstract class AbstractService
             throw new RequestNotSentException();
         }
 
-        return $this->response;
+
+        return $this->response; //@codeCoverageIgnore
     }
 
     /**
@@ -96,6 +107,7 @@ abstract class AbstractService
 
 
     /**
+     * @codeCoverageIgnore
      * Handles the request and sets the response property.
      *
      * @param array $data Any data to pass in the request
@@ -129,6 +141,7 @@ abstract class AbstractService
     }
 
     /**
+     * @codeCoverageIgnore
      * Converts a datetime obj into a int represents milliseconds since the epoc.
      *
      * @param \DateTime $dateTime

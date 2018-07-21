@@ -251,6 +251,8 @@ class UrlBuilderTest extends TestCase
             ->build();
 
         $this->expectException(BuilderLockedException::class);
+        $this->expectExceptionMessage('The URLBuilder is currently locked');
+        $this->expectExceptionCode(500);
         $url->setDomain('en.liveperson.net');
 
         $this->expectException(BuilderLockedException::class);

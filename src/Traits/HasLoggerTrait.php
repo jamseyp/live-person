@@ -12,6 +12,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
+ * @codeCoverageIgnore
  * Trait HasLoggerTrait
  *
  * @package CwsOps\LivePerson\Traits
