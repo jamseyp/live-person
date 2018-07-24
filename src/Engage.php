@@ -28,7 +28,6 @@ class Engage
     private $accountConfig;
     private $skills = [];
     private $historyLimit;
-    private $interactive = false;
     private $request;
     private $logger;
     private $ended = false;
