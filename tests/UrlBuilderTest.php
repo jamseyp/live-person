@@ -172,6 +172,7 @@ class UrlBuilderTest extends TestCase
 
     /**
      * @covers \CwsOps\LivePerson\Rest\UrlBuilder::hasQueryParam()
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::addQueryParam()
      *
      * @throws BuilderLockedException
      * @throws URLNotBuiltException
@@ -230,6 +231,29 @@ class UrlBuilderTest extends TestCase
     }
 
     /**
+     * @covers \CwsOps\LivePerson\Rest\UrlBuilder::isUrlBuilt()
+     * @throws BuilderLockedException
+     */
+    public function testCanCheckIfUrlIsBuilt()
+    {
+        $builder = new UrlBuilder();
+
+        $this->assertFalse($builder->isUrlBuilt());
+
+        $builder->create(true)
+            ->setDomain('en.liveperson.net')
+            ->setService('message-history')
+            ->setAccount('1929283')
+            ->addActionContext('foo')
+            ->hasQueryParam(true)
+            ->addQueryParam('foo', 'bar')
+            ->setVersion('2912')
+            ->build();
+
+        $this->assertTrue($builder->isUrlBuilt());
+    }
+
+    /**
      * @covers \CwsOps\LivePerson\Rest\BuilderLockedException
      * @covers \CwsOps\LivePerson\Rest\UrlBuilder::isValid()
      * @covers \CwsOps\LivePerson\Rest\UrlBuilder::addToUrl()
@@ -253,7 +277,13 @@ class UrlBuilderTest extends TestCase
         $this->expectException(BuilderLockedException::class);
         $this->expectExceptionMessage('The URLBuilder is currently locked');
         $this->expectExceptionCode(500);
-        $url->setDomain('en.liveperson.net');
+
+        try {
+            $url->setDomain('en.liveperson.net');
+        } catch (\Exception $e) {
+            $this->assertInstanceOf(BuilderLockedException::class, $e);
+        }
+
 
         $this->expectException(BuilderLockedException::class);
         $url->setAction('s');
