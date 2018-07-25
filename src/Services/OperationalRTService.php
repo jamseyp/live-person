@@ -9,6 +9,7 @@
 namespace CwsOps\LivePerson\Services;
 
 use CwsOps\LivePerson\Rest\Request;
+use Psr\Log\LogLevel;
 
 /**
  * Class OperationalRTService
@@ -18,9 +19,6 @@ use CwsOps\LivePerson\Rest\Request;
  */
 class OperationalRTService extends AbstractService
 {
-
-    const GLUE_CHAR = ',';
-
     /**
      * Gets the queue heath metrics at account or skill level.
      * @see https://developers.liveperson.com/data-operational-realtime-queue-health.html
@@ -42,8 +40,8 @@ class OperationalRTService extends AbstractService
         }
 
 
-        $this->urlBuilder = $this->request->buildUrl($this->getService())
-            ->setService('operations')
+        $this->urlBuilder = $this->request->buildUrl($this->getDomain())
+            ->setService($this->getService())
             ->setAccount($this->config->getAccountId())
             ->setAction('queuehealth')
             ->hasQueryParam(true)
@@ -51,7 +49,7 @@ class OperationalRTService extends AbstractService
 
         if ([] === $skillIds) {
             // Implode the array into a comma separated string and add to the url.
-            $this->urlBuilder->addQueryParam('skillIds', rtrim(implode(self::GLUE_CHAR, $skillIds), self::GLUE_CHAR));
+            $this->urlBuilder->addQueryParam('skillIds', $this->arrayToList($skillIds));
         }
 
         if (null !== $interval) {
@@ -86,18 +84,18 @@ class OperationalRTService extends AbstractService
             throw new \InvalidArgumentException($message);
         }
 
-        $this->urlBuilder = $this->request->buildUrl($this->getService())
-            ->setService('operations')
+        $this->urlBuilder = $this->request->buildUrl($this->getDomain())
+            ->setService($this->getService())
             ->setAccount($this->config->getAccountId())
-            ->setAccount('engactivity')
+            ->setAction('engactivity')
             ->hasQueryParam(true)
             ->addQueryParam('timeframe', $timeFrame);
 
         if (0 !== count($agents)) {
-            $this->urlBuilder->addQueryParam('agentIds', rtrim(implode(self::GLUE_CHAR, $agents), self::GLUE_CHAR));
+            $this->urlBuilder->addQueryParam('agentIds', $this->arrayToList($agents));
         }
         if (0 !== count($skillIds)) {
-            $this->urlBuilder->addQueryParam('skillIds', rtrim(implode(self::GLUE_CHAR, $skillIds), self::GLUE_CHAR));
+            $this->urlBuilder->addQueryParam('skillIds', $this->arrayToList($skillIds));
         }
         if (null !== $interval) {
             $this->urlBuilder->addQueryParam('interval', $interval);
@@ -108,6 +106,61 @@ class OperationalRTService extends AbstractService
         $this->urlBuilder->build()->getUrl();
 
         $this->handle($payload);
+    }
+
+
+    /**
+     * Retrieves the distribution of visitors’ wait time in the queue, before an agent replies to their chat.
+     * @see https://developers.liveperson.com/data-operational-realtime-sla-histogram.html
+     *
+     * @param int $timeFrame the timeframe in minutes to filter the data from.
+     * @param array $skillIds an optional array of skills to filter the data by.
+     * @param array $groupIds an optional array of groups filter agents by.
+     * @param array $histogram an array of histogram values to provide. All values must be multiples of 5.
+     *
+     * @throws \CwsOps\LivePerson\Rest\BuilderLockedException
+     * @throws \CwsOps\LivePerson\Rest\URLNotBuiltException
+     */
+    public function slaHistogram($timeFrame = 60, array $skillIds = [], array $groupIds = [], array $histogram = [])
+    {
+        if (!$this->isIntervalValid($timeFrame)) {
+            throw new \InvalidArgumentException(sprintf('The $timeframe must be between 0 and 1440, you passed %d', $timeFrame));
+        }
+
+        // Check if the histogram values are multiples of 5.
+        if (count($histogram) > 0) {
+            foreach ($histogram as $value) {
+                if ($value % 5 != 0) {
+                    // One or more of the values is not a multiple of 5.
+                    $message = sprintf('One or more of your histogram values is not a multiple of 5. You passed %s', $this->arrayToList($histogram));
+
+                    $this->log($message, LogLevel::ERROR, $histogram);
+
+                    throw new \InvalidArgumentException($message);
+                }
+            }
+        }
+
+        $this->urlBuilder = $this->request->buildUrl($this->getDomain())
+            ->setService($this->getService())
+            ->setAccount($this->config->getAccountId())
+            ->setAction('sla')
+            ->hasQueryParam(true)
+            ->addQueryParam('timeframe', $timeFrame);
+
+        if (0 !== count($skillIds)) {
+            $this->urlBuilder->addQueryParam('skillIds', $this->arrayToList($skillIds));
+        }
+        if (0 !== count($groupIds)) {
+            $this->urlBuilder->addQueryParam('groupIds', $this->arrayToList($groupIds));
+        }
+        if (0 !== count($histogram)) {
+            $this->urlBuilder->addQueryParam('histogram', $this->arrayToList($histogram));
+        }
+
+        $this->urlBuilder->build()->getUrl();
+
+        $this->handle();
     }
 
     /**
@@ -130,7 +183,7 @@ class OperationalRTService extends AbstractService
             throw new \InvalidArgumentException(sprintf('The $interval you passed was not valid or not dividable by the $timeframe (%d), you passed %d', $timeFrame, $interval));
         }
 
-        $this->urlBuilder = $this->request->buildUrl($this->getService())
+        $this->urlBuilder = $this->request->buildUrl($this->getDomain())
             ->setService('operations')
             ->setAccount($this->config->getAccountId())
             ->setAction('agentactivity');
@@ -158,7 +211,7 @@ class OperationalRTService extends AbstractService
             $method = Request::METHOD_POST;
             // agents is more than 3, so were going to send a POST request.
             $payLoad['timeframe'] = $timeFrame;
-            $payLoad['agentsIds'] = rtrim(implode(self::GLUE_CHAR, $agents), self::GLUE_CHAR);
+            $payLoad['agentsIds'] = $this->arrayToList($agents);
             if (null !== $interval) {
                 $payLoad['interval'] = $interval;
             }
@@ -182,13 +235,14 @@ class OperationalRTService extends AbstractService
      */
     public function currentQueueState(array $skillIds = [])
     {
-        $this->urlBuilder = $this->request->buildUrl($this->getService())
+        $this->urlBuilder = $this->request->buildUrl($this->getDomain())
+            ->setService($this->getService())
             ->setAccount($this->config->getAccountId())
             ->setAction('queuestate');
 
         if (0 !== count($skillIds)) {
             $this->urlBuilder->hasQueryParam(true);
-            $this->urlBuilder->addQueryParam('skillIds', rtrim(implode(self::GLUE_CHAR, $skillIds), self::GLUE_CHAR));
+            $this->urlBuilder->addQueryParam('skillIds', $this->arrayToList($skillIds));
         }
 
         $this->urlBuilder->build()->getUrl();
@@ -202,9 +256,20 @@ class OperationalRTService extends AbstractService
      *
      * @return string
      */
-    protected function getService(): string
+    protected function getDomain(): string
     {
         return 'leDataReporting';
+    }
+
+
+    /**
+     * Should provide the Live Person service the service will query against.
+     *
+     * @return string
+     */
+    protected function getService(): string
+    {
+        return 'operations';
     }
 
     /**

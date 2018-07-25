@@ -66,7 +66,7 @@ class AbstractServiceTest extends TestCase
 
         new class($this->config, 10) extends AbstractService
         {
-            protected function getService(): string
+            protected function getDomain(): string
             {
                 return 'foo';
             }
