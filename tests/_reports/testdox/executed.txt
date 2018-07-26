@@ -10,6 +10,7 @@ CwsOps\LivePerson\Tests\Config
 
 CwsOps\LivePerson\Tests\Request
  [x] Can construct with default options
+ [x] Can set and get client
 
 CwsOps\LivePerson\Tests\AbstractService
  [x] Can init with options
@@ -17,6 +18,15 @@ CwsOps\LivePerson\Tests\AbstractService
  [x] Get status
  [x] Get response
  [x] Will throw not built on no request
+
+CwsOps\LivePerson\Tests\EngagementService
+ [x] Can construct
+
+CwsOps\LivePerson\Tests\OperationalRTService
+ [x] Can construct
+ [x] Response instance of std class
+ [x] Agent activity throws exception on invalid time frame
+ [x] Throws exception on invalid interval
 
 CwsOps\LivePerson\Tests\UrlBuilder
  [x] Can init with no options

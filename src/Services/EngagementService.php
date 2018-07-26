@@ -36,7 +36,7 @@ class EngagementService extends AbstractService
         }
 
         $this->urlBuilder = $this->request->buildUrl($this->getDomain())
-            ->setService('interaction_history')
+            ->setService($this->getService())
             ->setAccount($this->config->getAccountId())
             ->setAction('interactions/search')
             ->hasQueryParam(true)
@@ -69,5 +69,15 @@ class EngagementService extends AbstractService
     protected function getDomain(): string
     {
         return 'engHistDomain';
+    }
+
+    /**
+     * Should provide the Live Person service the service will query against.
+     *
+     * @return string
+     */
+    protected function getService(): string
+    {
+        return 'interaction_history';
     }
 }

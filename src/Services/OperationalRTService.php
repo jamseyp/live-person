@@ -30,12 +30,14 @@ class OperationalRTService extends AbstractService
      * @throws \CwsOps\LivePerson\Rest\BuilderLockedException
      * @throws \CwsOps\LivePerson\Rest\URLNotBuiltException
      */
-    public function queueHealth(int $timeFrame = 60, array $skillIds = [], int $interval = null)
+    public function queueHealth(int $timeFrame = 60, array $skillIds = [], $interval = null)
     {
+
+
         if (!$this->isTimeFrameValid($timeFrame)) {
             throw new \InvalidArgumentException(sprintf('The $timeframe must be between 0 and 1440, you passed %d', $timeFrame));
         }
-        if (!$this->isIntervalValid($interval)) {
+        if (!$this->isIntervalValid($timeFrame, $interval)) {
             throw new \InvalidArgumentException(sprintf('The $interval you passed was not valid or not dividable by the $timeframe (%d), you passed %d', $timeFrame, $interval));
         }
 
@@ -79,7 +81,7 @@ class OperationalRTService extends AbstractService
             $message = sprintf('The $timeframe must be between 0 and 1440, you passed %d', $timeFrame);
             throw new \InvalidArgumentException($message);
         }
-        if (!$this->isIntervalValid($interval)) {
+        if (!$this->isIntervalValid($timeFrame, $interval)) {
             $message = sprintf('The $interval you passed was not valid or not dividable by the $timeframe (%d), you passed %d', $timeFrame, $interval);
             throw new \InvalidArgumentException($message);
         }
@@ -123,7 +125,7 @@ class OperationalRTService extends AbstractService
      */
     public function slaHistogram($timeFrame = 60, array $skillIds = [], array $groupIds = [], array $histogram = [])
     {
-        if (!$this->isIntervalValid($timeFrame)) {
+        if (!$this->isTimeFrameValid($timeFrame)) {
             throw new \InvalidArgumentException(sprintf('The $timeframe must be between 0 and 1440, you passed %d', $timeFrame));
         }
 
@@ -174,12 +176,12 @@ class OperationalRTService extends AbstractService
      * @throws \CwsOps\LivePerson\Rest\BuilderLockedException
      * @throws \CwsOps\LivePerson\Rest\URLNotBuiltException
      */
-    public function agentActivity(int $timeFrame = 60, array $agents = [], int $interval = null)
+    public function agentActivity(int $timeFrame = 60, array $agents = [], $interval = null)
     {
         if (!$this->isTimeFrameValid($timeFrame)) {
             throw new \InvalidArgumentException(sprintf('The $timeframe must be between 0 and 1440, you passed %d', $timeFrame));
         }
-        if (!$this->isIntervalValid($interval)) {
+        if (!$this->isIntervalValid($timeFrame, $interval)) {
             throw new \InvalidArgumentException(sprintf('The $interval you passed was not valid or not dividable by the $timeframe (%d), you passed %d', $timeFrame, $interval));
         }
 
@@ -293,13 +295,13 @@ class OperationalRTService extends AbstractService
      * The interval must be less than the time frame and must be dividable by the timeframe.
      *
      * @param int $timeFrame the timeframe value.
-     * @param int|null $interval the interval to check.
+     * @param int $interval the interval to check.
      *
      * @return bool true or false if the interval is valid.
      */
-    private function isIntervalValid(int $timeFrame, int $interval = null): bool
+    private function isIntervalValid($timeFrame, $interval): bool
     {
-        if (null === $interval || $timeFrame < $interval && $interval % $timeFrame === 0) {
+        if (null === $interval || $interval <= $timeFrame && $timeFrame % $interval === 0) {
             return true;
         }
         return false;

@@ -30,7 +30,7 @@ abstract class AbstractService
     const GLUE_CHAR = ',';
 
     /** @var UrlBuilder */
-    protected $urlBuilder;
+    public $urlBuilder;
     /** @var Config */
     protected $config;
     /** @var LoggerInterface */
@@ -66,6 +66,14 @@ abstract class AbstractService
         $this->logger = $this->hasLogger($logger);
 
         $this->request = new Request($config, $retryLimit, $logger);
+    }
+
+    /**
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->request;
     }
 
 
@@ -138,19 +146,21 @@ abstract class AbstractService
                 $this->response = $this->request->v1($this->urlBuilder->getUrl(), $method, $data);
                 $this->responseSent = true;
             } catch (\Exception $exception) {
-                $this->logger->error("An exception occurred while the request took place: %s", $exception->getMessage());
+                $this->logger->error("An exception occurred while the request took place: %s", $exception->getTrace());
             }
         } elseif ($type === self::REQUEST_TYPE_V2) {
             try {
                 $this->response = $this->request->v2($this->urlBuilder->getUrl(), $method, $data);
                 $this->responseSent = true;
             } catch (\Exception $exception) {
-                $this->logger->error("An exception occurred while the request took place: %s", $exception->getMessage());
+                $this->logger->error("An exception occurred while the request took place: %s", $exception->getTrace());
             }
         }
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * Converts a datetime obj into a int represents milliseconds since the epoc.
      *
      * @param \DateTime $dateTime
@@ -163,6 +173,7 @@ abstract class AbstractService
     }
 
     /**
+     * @codeCoverageIgnore
      * Converts a array to a string separated by a glue character.
      *
      * @param array $list the array to separate.
@@ -176,6 +187,7 @@ abstract class AbstractService
     }
 
     /**
+     * @codeCoverageIgnore
      * Logs an entry to the logger.
      *
      * @param string $message the message to log.
