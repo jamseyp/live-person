@@ -14,7 +14,10 @@
   "autoload": {
     "psr-4": {
       "CwsOps\\LivePerson\\": "src"
-    }
+    },
+    "exclude-from-classmap": [
+      "tests/"
+    ]
   },
   "require": {
     "php": ">=7.0",

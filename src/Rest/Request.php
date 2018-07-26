@@ -13,6 +13,7 @@ use CwsOps\LivePerson\Traits\HasLoggerTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  *
@@ -56,7 +57,6 @@ class Request
     private $bearer;
     /** @var UrlBuilder */
     private $urlBuilder;
-    private $client;
 
 
     /**
@@ -125,18 +125,18 @@ class Request
      */
     public function v1($url, $method = Request::METHOD_GET, $payload = null)
     {
-
+        $client = new Client();
 
         $args = [
             'auth' => 'oauth',
             'headers' => [
                 'content-type' => 'application/json',
             ],
-            'form_params' => $payload ?: []
+            'body' => $payload ?: '{}'
         ];
 
         try {
-            $response = $this->getClient()->request($method, $url, $args);
+            $response = $client->request($method, $url, $args);
             $responseBody = json_decode($response->getBody());
 
             return $responseBody;
@@ -174,47 +174,25 @@ class Request
     public function v2(string $url, $method, $payload = [], $headers = [])
     {
         $this->login();
+
+        $client = new Client();
         $args = [
             'headers' => array_merge([
                 'content-type' => 'application/json',
                 'Authorization' => 'Bearer ' . $this->bearer
             ], $headers ?: []),
-            'form_params' => $payload ?: []
+            'body' => $payload ?: '{}'
         ];
 
 
         try {
-            $response = $this->getClient()->request($method, $url, $args);
+            $response = $client->request($method, $url, $args);
 
             return json_decode($response->getBody());
         } catch (GuzzleException $e) {
             $this->logger->critical(sprintf('client error: %s', $e->getMessage()));
             return new \stdClass();
         }
-    }
-
-    /**
-     * Gets the the Guzzle Client.
-     *
-     * @return Client
-     */
-    public function getClient()
-    {
-        if (null === $this->client) {
-            $this->client = new Client();
-        }
-
-        return $this->client;
-    }
-
-    /**
-     * Sets the Guzzle Client.
-     *
-     * @param Client $client
-     */
-    public function setClient(Client $client)
-    {
-        $this->client = $client;
     }
 
 

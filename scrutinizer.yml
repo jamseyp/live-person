@@ -4,7 +4,4 @@ build:
       tests:
         override:
           # Add the respective Scrutinizer analysis for your language like
-          - command: php-scrutinizer-run
-            coverage:
-              file: tests/_reports/logs/clover.xml   # <- Set this to where we find the coverage data.
-              format: clover
+          - php-scrutinizer-run
