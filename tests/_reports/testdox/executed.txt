@@ -1,0 +1,48 @@
+CwsOps\LivePerson\Tests\Config
+ [x] Can construct
+ [x] Cant construct without default args
+ [x] Get username
+ [x] Get consumer key
+ [x] Get account id
+ [x] Get token secret
+ [x] Get consumer secret
+ [x] Get token
+
+CwsOps\LivePerson\Tests\Request
+ [x] Can construct with default options
+ [x] Can set and get client
+
+CwsOps\LivePerson\Tests\AbstractService
+ [x] Can init with options
+ [x] Will throw invalid argument on invalid retry limit
+ [x] Get status
+ [x] Get response
+ [x] Will throw not built on no request
+
+CwsOps\LivePerson\Tests\EngagementService
+ [x] Can construct
+
+CwsOps\LivePerson\Tests\OperationalRTService
+ [x] Can construct
+ [x] Response instance of std class
+ [x] Agent activity throws exception on invalid time frame
+ [x] Throws exception on invalid interval
+
+CwsOps\LivePerson\Tests\UrlBuilder
+ [x] Can init with no options
+ [x] Returns instance of self
+ [x] Can build and create
+ [x] Can build secure url
+ [x] Can set domain
+ [x] Can set service
+ [x] Can set action
+ [x] Can set account
+ [x] Can set action context
+ [x] Can add additional params
+ [x] Can set has query params to false
+ [x] Can change version number
+ [x] Can build full url
+ [x] Can check if url is built
+ [x] Throws builder locked exception
+ [x] Throws url not built exception
+

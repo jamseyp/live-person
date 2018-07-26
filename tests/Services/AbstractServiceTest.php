@@ -11,6 +11,7 @@ namespace CwsOps\LivePerson\Tests;
 use CwsOps\LivePerson\Account\Config;
 use CwsOps\LivePerson\Services\AbstractService;
 use CwsOps\LivePerson\Services\RequestNotSentException;
+use GuzzleHttp\Client;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -26,6 +27,8 @@ class AbstractServiceTest extends TestCase
     private $mock;
     /** @var Config */
     private $config;
+    /** @var Client */
+    private $client;
 
     public function setUp()
     {
@@ -66,11 +69,23 @@ class AbstractServiceTest extends TestCase
 
         new class($this->config, 10) extends AbstractService
         {
-            protected function getService(): string
+            protected function getDomain(): string
             {
                 return 'foo';
             }
+
+            /**
+             * Should provide the Live Person service the service will query against.
+             *
+             * @return string
+             */
+            protected function getService(): string
+            {
+                return '';
+            }
         };
+
+
     }
 
     /**
@@ -115,7 +130,7 @@ class AbstractServiceTest extends TestCase
     }
 
     /**
-     *
+     * @covers \CwsOps\LivePerson\Services\RequestNotSentException
      * @covers \CwsOps\LivePerson\Services\AbstractService::getResponse()
      */
     public function testWillThrowNotBuiltOnNoRequest()
@@ -125,14 +140,19 @@ class AbstractServiceTest extends TestCase
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
-        $this->expectException(RequestNotSentException::class);
+        try {
+            $mock->getResponse();
+        } catch (\Exception $e) {
+            $this->assertInstanceOf(RequestNotSentException::class, $e);
+            $this->assertEquals('No request has been sent, you need call a service first.', $e->getMessage());
+        }
 
-        $mock->getResponse();
     }
 
     public function tearDown()
     {
         $this->mock = null;
+        $this->client = null;
     }
 
 

@@ -35,8 +35,8 @@ class EngagementService extends AbstractService
             throw new \InvalidArgumentException(sprintf('$limit can only be value between 0 and 100'));
         }
 
-        $this->urlBuilder = $this->request->buildUrl($this->getService())
-            ->setService('interaction_history')
+        $this->urlBuilder = $this->request->buildUrl($this->getDomain())
+            ->setService($this->getService())
             ->setAccount($this->config->getAccountId())
             ->setAction('interactions/search')
             ->hasQueryParam(true)
@@ -66,8 +66,18 @@ class EngagementService extends AbstractService
      *
      * @return string
      */
-    protected function getService(): string
+    protected function getDomain(): string
     {
         return 'engHistDomain';
+    }
+
+    /**
+     * Should provide the Live Person service the service will query against.
+     *
+     * @return string
+     */
+    protected function getService(): string
+    {
+        return 'interaction_history';
     }
 }
