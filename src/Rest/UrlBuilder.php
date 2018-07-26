@@ -276,17 +276,29 @@ class UrlBuilder
         $this->addToUrl($url, $this->service);
         $this->addToUrl($url, 'api/account');
         $this->addToUrl($url, $this->account);
-        $this->addToUrl($url, $this->action);
-        $this->addToUrl($url, $this->actionContext, false);
+
+
+        if ($this->actionContext !== null) {
+            $this->addToUrl($url, $this->action);
+            $this->addToUrl($url, $this->actionContext, false);
+        } else {
+            $this->addToUrl($url, $this->action, false);
+        }
+
 
         // If the query has any parameters add them now.
+        $i = 0;
         if ($this->hasQuery) {
             $url .= '?';
             foreach ($this->queryParams as $key => $value) {
+                if ($i > 0) {
+                    $url .= '&';
+                }
                 $url .= $key . '=' . $value;
+                $i++;
             }
 
-            $url .= 'v=' . $this->version;
+            $url .= '&v=' . $this->version;
         } else {
             $url .= '?v=' . $this->version;
         }

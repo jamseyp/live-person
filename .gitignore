@@ -8,3 +8,5 @@ composer.phar
 /tests/_reports/
 
 /Test Results - PHPUnit.html
+
+/api-tests/

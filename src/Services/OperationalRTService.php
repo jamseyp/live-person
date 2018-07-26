@@ -28,7 +28,6 @@ class OperationalRTService extends AbstractService
      * @param int|null $interval the intervals to get data at.
      *
      * @throws \CwsOps\LivePerson\Rest\BuilderLockedException
-     * @throws \CwsOps\LivePerson\Rest\URLNotBuiltException
      */
     public function queueHealth(int $timeFrame = 60, array $skillIds = [], $interval = null)
     {
@@ -49,16 +48,18 @@ class OperationalRTService extends AbstractService
             ->hasQueryParam(true)
             ->addQueryParam('timeframe', $timeFrame);
 
-        if ([] === $skillIds) {
+        if (!empty($skillIds)) {
             // Implode the array into a comma separated string and add to the url.
             $this->urlBuilder->addQueryParam('skillIds', $this->arrayToList($skillIds));
+        } else {
+            $this->urlBuilder->addQueryParam('skillIds', 'all');
         }
 
         if (null !== $interval) {
             $this->urlBuilder->addQueryParam('interval', $interval);
         }
 
-        $this->urlBuilder->build()->getUrl();
+        $this->urlBuilder->build();
 
         $this->handle($payload = [], Request::METHOD_GET);
     }
@@ -73,7 +74,6 @@ class OperationalRTService extends AbstractService
      * @param int|null $interval the interval to filter at.
      *
      * @throws \CwsOps\LivePerson\Rest\BuilderLockedException
-     * @throws \CwsOps\LivePerson\Rest\URLNotBuiltException
      */
     public function engagementActivity(int $timeFrame = 60, array $agents = [], array $skillIds = [], int $interval = null)
     {
@@ -105,7 +105,7 @@ class OperationalRTService extends AbstractService
 
         $payload = [];
 
-        $this->urlBuilder->build()->getUrl();
+        $this->urlBuilder->build();
 
         $this->handle($payload);
     }
@@ -121,7 +121,6 @@ class OperationalRTService extends AbstractService
      * @param array $histogram an array of histogram values to provide. All values must be multiples of 5.
      *
      * @throws \CwsOps\LivePerson\Rest\BuilderLockedException
-     * @throws \CwsOps\LivePerson\Rest\URLNotBuiltException
      */
     public function slaHistogram($timeFrame = 60, array $skillIds = [], array $groupIds = [], array $histogram = [])
     {
@@ -160,7 +159,7 @@ class OperationalRTService extends AbstractService
             $this->urlBuilder->addQueryParam('histogram', $this->arrayToList($histogram));
         }
 
-        $this->urlBuilder->build()->getUrl();
+        $this->urlBuilder->build();
 
         $this->handle();
     }
@@ -176,12 +175,12 @@ class OperationalRTService extends AbstractService
      * @throws \CwsOps\LivePerson\Rest\BuilderLockedException
      * @throws \CwsOps\LivePerson\Rest\URLNotBuiltException
      */
-    public function agentActivity(int $timeFrame = 60, array $agents = [], $interval = null)
+    public function agentActivity(int $timeFrame = 1440, array $agents = [], $interval = null)
     {
         if (!$this->isTimeFrameValid($timeFrame)) {
             throw new \InvalidArgumentException(sprintf('The $timeframe must be between 0 and 1440, you passed %d', $timeFrame));
         }
-        if (!$this->isIntervalValid($timeFrame, $interval)) {
+        if (!$this->isIntervalValid($timeFrame,$interval)) {
             throw new \InvalidArgumentException(sprintf('The $interval you passed was not valid or not dividable by the $timeframe (%d), you passed %d', $timeFrame, $interval));
         }
 
@@ -203,7 +202,7 @@ class OperationalRTService extends AbstractService
             if (0 !== count($agents)) {
                 $this->urlBuilder->addQueryParam('agentIds', rtrim(implode(self::GLUE_CHAR, $agents), self::GLUE_CHAR));
             } else {
-                $this->urlBuilder->addQueryParam('agentsIds', 'all');
+                $this->urlBuilder->addQueryParam('agentIds', 'all');
             }
 
             if (null !== $interval) {
@@ -219,7 +218,7 @@ class OperationalRTService extends AbstractService
             }
         }
 
-        $this->urlBuilder->build()->getUrl();
+        $this->urlBuilder->build();
 
         $this->handle($payLoad, $method);
     }

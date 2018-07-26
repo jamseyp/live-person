@@ -12,6 +12,8 @@ use CwsOps\LivePerson\Account\Config;
 use CwsOps\LivePerson\Traits\HasLoggerTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Subscriber\Oauth\Oauth1;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -56,6 +58,7 @@ class Request
     private $bearer;
     /** @var UrlBuilder */
     private $urlBuilder;
+    /** @var Client */
     private $client;
 
 
@@ -75,6 +78,8 @@ class Request
         // Set the retry counter to zero.
         $this->retryCounter = 0;
         $this->urlBuilder = new UrlBuilder();
+
+        $this->requestClient();
     }
 
     /**
@@ -88,9 +93,9 @@ class Request
      */
     public function getDomain(string $service)
     {
-        $response = $this->v1("https://api.liveperson.net/api/account/{$this->config->getAccountId()}/service/{$service}/baseURI.json?version=1", Request::METHOD_GET);
+        $response = $this->v1("https://api.liveperson.net/api/account/{$this->config->getAccountId()}/service/{$service}/baseURI.json?version=1.0", Request::METHOD_GET);
 
-        return $response->baseUri;
+        return $response->baseURI;
     }
 
     /**
@@ -106,7 +111,7 @@ class Request
     {
         try {
             return $this->urlBuilder->create(true)
-                ->setService($this->getDomain($service));
+                ->setDomain(($this->getDomain($service)));
         } catch (BuilderLockedException $e) {
             $this->logger->critical($e->getMessage());
         }
@@ -132,11 +137,14 @@ class Request
             'headers' => [
                 'content-type' => 'application/json',
             ],
-            'form_params' => $payload ?: []
+            'json' => $payload ?: new \stdClass()
         ];
 
+
         try {
-            $response = $this->getClient()->request($method, $url, $args);
+
+
+            $response = $this->requestClient()->request($method, $url, $args);
             $responseBody = json_decode($response->getBody());
 
             return $responseBody;
@@ -159,6 +167,29 @@ class Request
 
     }
 
+    private function requestClient()
+    {
+        $consumer_key = $this->config->getConsumerKey();
+        $consumer_secret = $this->config->getConsumerSecret();
+        $token = $this->config->getToken();
+        $secret = $this->config->getTokenSecret();
+        $stack = HandlerStack::create();
+        $auth = new Oauth1([
+            'consumer_key' => $consumer_key,
+            'consumer_secret' => $consumer_secret,
+            'token' => $token,
+            'token_secret' => $secret,
+            'signature_method' => Oauth1::SIGNATURE_METHOD_HMAC,
+        ]);
+        $stack->push($auth);
+        $client = new Client([
+            'handler' => $stack,
+        ]);
+
+
+        return $client;
+    }
+
     /**
      * @codeCoverageIgnore
      *
@@ -179,12 +210,12 @@ class Request
                 'content-type' => 'application/json',
                 'Authorization' => 'Bearer ' . $this->bearer
             ], $headers ?: []),
-            'form_params' => $payload ?: []
+            'form_params' => $payload ?: '{}'
         ];
 
 
         try {
-            $response = $this->getClient()->request($method, $url, $args);
+            $response = $this->client->request($method, $url, $args);
 
             return json_decode($response->getBody());
         } catch (GuzzleException $e) {
@@ -200,9 +231,6 @@ class Request
      */
     public function getClient()
     {
-        if (null === $this->client) {
-            $this->client = new Client();
-        }
 
         return $this->client;
     }
